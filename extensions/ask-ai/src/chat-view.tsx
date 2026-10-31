@@ -13,7 +13,7 @@ export function lastCodeBlock(markdown: string): string | undefined {
 	return blocks.at(-1)?.[1].replace(/\n$/, "");
 }
 
-export function turnMarkdown(turn: Turn): string {
+export function turnMarkdown(turn: Turn, isLatest = false): string {
 	const answer = renderAnswer(turn.answer).markdown;
 	const body =
 		turn.status === "error"
@@ -21,13 +21,15 @@ export function turnMarkdown(turn: Turn): string {
 			: turn.status === "stopped"
 				? `${answer ? `${answer}\n\n` : ""}_Stopped._`
 				: answer || "_Thinking…_";
-	return `### ${turn.question}\n\n[ ${providerById(turn.providerId).title} ]\n\n${body}`;
+	const marker = isLatest ? "❓ Q: " : "Q: ";
+	return `### ${marker}${turn.question}\n\n[ ${providerById(turn.providerId).title} ]\n\n${body}`;
 }
 
 /** Newest turn first so a streaming answer stays in view; earlier turns follow, newest to oldest. */
 export function conversationMarkdown(conv: Conversation, newestFirst: boolean): string {
 	const turns = newestFirst ? [...conv.turns].reverse() : conv.turns;
-	return turns.map(turnMarkdown).join("\n\n\n---\n\n---\n\n\n");
+	const latestId = conv.turns.at(-1)?.id;
+	return turns.map((t) => turnMarkdown(t, t.id === latestId)).join("\n\n\n---\n\n---\n\n\n");
 }
 
 export const transcriptText = (conv: Conversation) =>
@@ -75,7 +77,7 @@ export function ChatView() {
 	const currentTurn = reversed[safeIdx];
 
 	const stackedMd = conversationMarkdown(conv, true).replace("_Thinking…_", thinking ? thinkingText : "_Thinking…_");
-	const paginatedBase = currentTurn ? turnMarkdown(currentTurn) : stackedMd;
+	const paginatedBase = currentTurn ? turnMarkdown(currentTurn, currentTurn.id === latest?.id) : stackedMd;
 	const paginatedMd = viewMode === "paginated" && currentTurn?.id === latest?.id && thinking
 		? paginatedBase.replace("_Thinking…_", thinkingText)
 		: paginatedBase;

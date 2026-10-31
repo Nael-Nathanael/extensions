@@ -118,6 +118,16 @@ export function SettingsForm(props: { onSaved?: (settings: Settings) => void }) 
 				<Form.Dropdown.Item title="Stacked (scrollable)" value="stacked" />
 				<Form.Dropdown.Item title="Paginated (Ctrl+[ / Ctrl+])" value="paginated" />
 			</Form.Dropdown>
+			<Form.TextField
+				id="resumeWindow"
+				title="Resume Window (minutes)"
+				info="Reopening Ask AI by name continues the last conversation if it was active within this many minutes."
+				value={String(settings.resumeWindowMinutes ?? 10)}
+				onChange={(value) => {
+					const n = parseInt(value, 10);
+					setSettings({ ...settings, resumeWindowMinutes: Number.isFinite(n) && n > 0 ? n : 10 });
+				}}
+			/>
 
 			{id === "opencode" && (
 				<>

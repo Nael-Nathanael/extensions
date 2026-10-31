@@ -17,11 +17,13 @@ export type Settings = {
 	extraPath?: string;
 	/** How the answer view shows multiple turns. */
 	viewMode?: ViewMode;
+	/** Minutes to keep a conversation resumable when reopening Ask AI by name. */
+	resumeWindowMinutes?: number;
 };
 
 const KEY = "settings";
 
-export const DEFAULT_SETTINGS: Settings = { provider: "claude-code", providers: {}, outputStyle: "full", richAnswers: true, viewMode: "stacked" };
+export const DEFAULT_SETTINGS: Settings = { provider: "claude-code", providers: {}, outputStyle: "full", richAnswers: true, viewMode: "stacked", resumeWindowMinutes: 10 };
 
 export async function loadSettings(): Promise<Settings> {
 	const raw = await LocalStorage.getItem<string>(KEY);

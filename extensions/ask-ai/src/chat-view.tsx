@@ -17,7 +17,7 @@ export function turnMarkdown(turn: Turn, isLatest = false): string {
 	const answer = renderAnswer(turn.answer).markdown;
 	const body =
 		turn.status === "error"
-			? `${answer ? `${answer}\n\n\n---\n\n---\n\n\n` : ""}**Couldn't get an answer.**\n\n${turn.error}\n\n_Press Ctrl+R to ask again._`
+			? `${answer ? `${answer}\n\n\n\n---\n\n---\n\n\n\n` : ""}**Couldn't get an answer.**\n\n${turn.error}\n\n_Press Ctrl+R to ask again._`
 			: turn.status === "stopped"
 				? `${answer ? `${answer}\n\n` : ""}_Stopped._`
 				: answer || "_Thinking…_";
@@ -29,7 +29,7 @@ export function turnMarkdown(turn: Turn, isLatest = false): string {
 export function conversationMarkdown(conv: Conversation, newestFirst: boolean): string {
 	const turns = newestFirst ? [...conv.turns].reverse() : conv.turns;
 	const latestId = conv.turns.at(-1)?.id;
-	return turns.map((t) => turnMarkdown(t, t.id === latestId)).join("\n\n\n---\n\n---\n\n\n");
+	return turns.map((t) => turnMarkdown(t, t.id === latestId)).join("\n\n\n\n---\n\n---\n\n\n\n");
 }
 
 export const transcriptText = (conv: Conversation) =>

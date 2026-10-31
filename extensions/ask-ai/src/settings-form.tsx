@@ -1,7 +1,7 @@
 import { Action, ActionPanel, Form, Icon, Toast, showToast, useNavigation } from "@vicinae/api";
 import { useEffect, useState } from "react";
 import { type ProviderId, providerById, providers } from "./providers/index.ts";
-import { type OutputStyle, type ProviderSettings, type Settings, loadSettings, saveSettings } from "./settings.ts";
+import { type OutputStyle, type ProviderSettings, type Settings, type ViewMode, loadSettings, saveSettings } from "./settings.ts";
 
 const CLI: Partial<Record<ProviderId, { bin: string; login: string }>> = {
 	"claude-code": { bin: "claude", login: "claude auth login" },
@@ -109,6 +109,16 @@ export function SettingsForm(props: { onSaved?: (settings: Settings) => void }) 
 					onChange={(extraPath) => setSettings({ ...settings, extraPath })}
 				/>
 			)}
+			<Form.Dropdown
+				id="viewMode"
+				title="Answer View"
+				value={settings.viewMode ?? "stacked"}
+				onChange={(value) => setSettings({ ...settings, viewMode: value as ViewMode })}
+			>
+				<Form.Dropdown.Item title="Stacked (scrollable)" value="stacked" />
+				<Form.Dropdown.Item title="Paginated (left/right arrows)" value="paginated" />
+			</Form.Dropdown>
+
 			{id === "opencode" && (
 				<>
 					<Form.Dropdown

@@ -3,6 +3,7 @@ import { richPrompt } from "./openui.ts";
 import type { ProviderId } from "./providers/index.ts";
 
 export type OutputStyle = "full" | "layman" | "custom";
+export type ViewMode = "stacked" | "paginated";
 
 export type ProviderSettings = { apiKey?: string; baseUrl?: string; model?: string; agent?: string; autoApprove?: boolean };
 
@@ -14,11 +15,13 @@ export type Settings = {
 	/** Let the model add OpenUI blocks (tables, charts, places, buttons). */
 	richAnswers: boolean;
 	extraPath?: string;
+	/** How the answer view shows multiple turns. */
+	viewMode?: ViewMode;
 };
 
 const KEY = "settings";
 
-export const DEFAULT_SETTINGS: Settings = { provider: "claude-code", providers: {}, outputStyle: "full", richAnswers: true };
+export const DEFAULT_SETTINGS: Settings = { provider: "claude-code", providers: {}, outputStyle: "full", richAnswers: true, viewMode: "stacked" };
 
 export async function loadSettings(): Promise<Settings> {
 	const raw = await LocalStorage.getItem<string>(KEY);

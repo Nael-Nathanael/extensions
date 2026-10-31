@@ -21,7 +21,7 @@ export function turnMarkdown(turn: Turn, isLatest = false): string {
 			: turn.status === "stopped"
 				? `${answer ? `${answer}\n\n` : ""}_Stopped._`
 				: answer || "_Thinking…_";
-	const marker = isLatest ? "❓ Q: " : "Q: ";
+	const marker = isLatest ? "💬 Q: " : "Q: ";
 	return `### ${marker}${turn.question}\n\n[ ${providerById(turn.providerId).title} ]\n\n${body}`;
 }
 

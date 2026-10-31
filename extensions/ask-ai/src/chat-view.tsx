@@ -19,7 +19,7 @@ export function turnMarkdown(turn: Turn): string {
 			: turn.status === "stopped"
 				? `${answer ? `${answer}\n\n` : ""}_Stopped._`
 				: answer || "_Thinking…_";
-	return `## ${turn.question}\n\n_${providerById(turn.providerId).title}_\n\n${body}`;
+	return `### ${turn.question}\n\n_${providerById(turn.providerId).title}_\n\n${body}`;
 }
 
 /** Newest turn first so a streaming answer stays in view; earlier turns follow, newest to oldest. */

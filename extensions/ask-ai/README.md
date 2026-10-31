@@ -19,6 +19,7 @@ Type a question into [Vicinae](https://vicinae.com). If nothing matches, press E
 | Claude Code | Your existing `claude` login |
 | Codex | Your existing `codex` login |
 | Antigravity | Your existing `agy` login |
+| OpenCode | No key needed. Uses the OpenCode CLI (`opencode`); free models (beam-free, deepseek-v4.1-flash-free, ...) or any model configured in OpenCode, including local Ollama (`ollama/<model>`). Runs in agent mode (build) with auto-approved permissions; destructive shell commands are denied per run. |
 | Claude API | Anthropic API key, or any Anthropic-compatible gateway (set **Base URL**; the key is sent as a bearer token). Requests use low effort. Sent straight to Anthropic, a question the model declines may be answered by Anthropic's recommended fallback model. |
 | OpenAI API | OpenAI API key, or any gateway serving the Responses API (set **Base URL**) |
 | Gemini API | Gemini API key |

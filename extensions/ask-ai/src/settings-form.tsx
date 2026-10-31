@@ -7,12 +7,14 @@ const CLI: Partial<Record<ProviderId, { bin: string; login: string }>> = {
 	"claude-code": { bin: "claude", login: "claude auth login" },
 	codex: { bin: "codex", login: "codex login" },
 	antigravity: { bin: "agy", login: "agy" },
+	opencode: { bin: "opencode", login: "opencode" },
 };
 
 const DEFAULT_MODEL: Partial<Record<ProviderId, string>> = {
 	anthropic: "claude-opus-5-5",
 	openai: "gpt-5.5",
 	gemini: "gemini-3.8-flash",
+	opencode: "opencode/beam-free",
 };
 
 /** Provider first; only that provider's fields are shown. */
@@ -106,6 +108,31 @@ export function SettingsForm(props: { onSaved?: (settings: Settings) => void }) 
 					value={settings.extraPath ?? ""}
 					onChange={(extraPath) => setSettings({ ...settings, extraPath })}
 				/>
+			)}
+			{id === "opencode" && (
+				<>
+					<Form.Dropdown
+						id="opencode-agent"
+						title="Agent mode"
+						value={current.agent ?? "build"}
+						onChange={setField("agent")}
+					>
+						<Form.Dropdown.Item title="Build (tools allowed)" value="build" />
+						<Form.Dropdown.Item title="Plan (read-only, no writes)" value="plan" />
+					</Form.Dropdown>
+					<Form.Checkbox
+						id="opencode-auto"
+						title="Auto-approve permissions"
+						label="Approve tool/permission prompts automatically (needed for headless runs)"
+						value={current.autoApprove !== false}
+						onChange={(autoApprove) =>
+							setSettings({ ...settings, providers: { ...settings.providers, [id]: { ...current, autoApprove } } })}
+					/>
+					<Form.Description
+						title="Model ids"
+						text="Free: opencode/beam-free, opencode/deepseek-v4.1-flash-free, opencode/glm-5.3-flash-free. Local: ollama/<model> (install Ollama + `ollama pull`). Paid: any model configured in OpenCode. New models work by typing their id; the extension does not enumerate them."
+					/>
+				</>
 			)}
 
 			<Form.Separator />

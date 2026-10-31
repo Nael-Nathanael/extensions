@@ -2,13 +2,17 @@ export type Role = "user" | "assistant";
 
 export type Message = { role: Role; content: string };
 
-export type ProviderId = "anthropic" | "openai" | "gemini" | "claude-code" | "codex" | "antigravity";
+export type ProviderId = "anthropic" | "openai" | "gemini" | "claude-code" | "codex" | "antigravity" | "opencode";
 
 export type StreamOptions = {
 	model?: string;
 	apiKey?: string;
 	/** Gateway for the Claude or OpenAI API; for Claude the key is then sent as a bearer token. */
 	baseUrl?: string;
+	/** OpenCode agent to use (build = tools allowed, plan = read-only). */
+	agent?: string;
+	/** OpenCode: auto-approve permission prompts (needed for headless runs). */
+	autoApprove?: boolean;
 	systemPrompt: string;
 	/** Empty folder the CLIs run in, so they see no project files. */
 	workdir: string;

@@ -4,7 +4,7 @@ import type { ProviderId } from "./providers/index.ts";
 
 export type OutputStyle = "full" | "layman" | "custom";
 
-export type ProviderSettings = { apiKey?: string; baseUrl?: string; model?: string };
+export type ProviderSettings = { apiKey?: string; baseUrl?: string; model?: string; agent?: string; autoApprove?: boolean };
 
 export type Settings = {
 	provider: ProviderId;
@@ -42,6 +42,6 @@ const STYLES: Record<Exclude<OutputStyle, "custom">, string> = {
 export function systemPrompt(settings: Settings): string {
 	const style =
 		settings.outputStyle === "custom" ? settings.customStyle?.trim() || STYLES.full : STYLES[settings.outputStyle];
-	const base = `You answer questions typed into a desktop launcher. Be direct; skip preamble.\n\n${style}`;
+	const base = `You answer questions typed into a desktop launcher. Be direct and concise; skip preamble; keep answers reasonably short unless the user asks for depth.\n\n${style}`;
 	return settings.richAnswers ? `${base}\n\n${richPrompt}` : base;
 }

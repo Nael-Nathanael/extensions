@@ -17,17 +17,17 @@ export function turnMarkdown(turn: Turn): string {
 	const answer = renderAnswer(turn.answer).markdown;
 	const body =
 		turn.status === "error"
-			? `${answer ? `${answer}\n\n---\n\n---\n\n` : ""}**Couldn't get an answer.**\n\n${turn.error}\n\n_Press Ctrl+R to ask again._`
+			? `${answer ? `${answer}\n\n\n---\n\n---\n\n\n` : ""}**Couldn't get an answer.**\n\n${turn.error}\n\n_Press Ctrl+R to ask again._`
 			: turn.status === "stopped"
 				? `${answer ? `${answer}\n\n` : ""}_Stopped._`
 				: answer || "_Thinking…_";
-	return `### ${turn.question}\n\n_${providerById(turn.providerId).title}_\n\n${body}`;
+	return `### ${turn.question}\n\n[ ${providerById(turn.providerId).title} ]\n\n${body}`;
 }
 
 /** Newest turn first so a streaming answer stays in view; earlier turns follow, newest to oldest. */
 export function conversationMarkdown(conv: Conversation, newestFirst: boolean): string {
 	const turns = newestFirst ? [...conv.turns].reverse() : conv.turns;
-	return turns.map(turnMarkdown).join("\n\n---\n\n---\n\n");
+	return turns.map(turnMarkdown).join("\n\n\n---\n\n---\n\n\n");
 }
 
 export const transcriptText = (conv: Conversation) =>
@@ -99,7 +99,7 @@ export function ChatView() {
 								<Action
 									title="Previous question"
 									icon={Icon.ArrowLeft}
-									shortcut={{ modifiers: ["ctrl"], key: "arrowLeft" }}
+									shortcut={{ modifiers: ["ctrl"], key: "[" }}
 									onAction={() => setIdx(safeIdx + 1)}
 								/>
 							)}
@@ -107,7 +107,7 @@ export function ChatView() {
 								<Action
 									title="Next question"
 									icon={Icon.ArrowRight}
-									shortcut={{ modifiers: ["ctrl"], key: "arrowRight" }}
+									shortcut={{ modifiers: ["ctrl"], key: "]" }}
 									onAction={() => setIdx(safeIdx - 1)}
 								/>
 							)}

@@ -116,7 +116,7 @@ export function SettingsForm(props: { onSaved?: (settings: Settings) => void }) 
 				onChange={(value) => setSettings({ ...settings, viewMode: value as ViewMode })}
 			>
 				<Form.Dropdown.Item title="Stacked (scrollable)" value="stacked" />
-				<Form.Dropdown.Item title="Paginated (left/right arrows)" value="paginated" />
+				<Form.Dropdown.Item title="Paginated (Ctrl+[ / Ctrl+])" value="paginated" />
 			</Form.Dropdown>
 
 			{id === "opencode" && (

@@ -1,7 +1,9 @@
 import { Action, ActionPanel, Detail, Icon, useNavigation } from "@vicinae/api";
+import { useEffect, useState } from "react";
 import { type RichAction, renderAnswer } from "./openui.ts";
 import { providerById } from "./providers/index.ts";
 import { ask, startNew, stop, useConversation } from "./session.ts";
+import { type Settings, loadSettings } from "./settings.ts";
 import { SettingsForm } from "./settings-form.tsx";
 import type { Conversation, Turn } from "./store.ts";
 import { WidgetForm } from "./widget-form.tsx";
@@ -11,21 +13,23 @@ export function lastCodeBlock(markdown: string): string | undefined {
 	return blocks.at(-1)?.[1].replace(/\n$/, "");
 }
 
-export function turnMarkdown(turn: Turn): string {
+export function turnMarkdown(turn: Turn, isLatest = false): string {
 	const answer = renderAnswer(turn.answer).markdown;
 	const body =
 		turn.status === "error"
-			? `${answer ? `${answer}\n\n---\n\n` : ""}**Couldn't get an answer.**\n\n${turn.error}`
+			? `${answer ? `${answer}\n\n&nbsp;\n\n---\n\n---\n\n&nbsp;\n\n` : ""}**Couldn't get an answer.**\n\n${turn.error}\n\n_Press Ctrl+R to ask again._`
 			: turn.status === "stopped"
 				? `${answer ? `${answer}\n\n` : ""}_Stopped._`
 				: answer || "_Thinking…_";
-	return `## ${turn.question}\n\n_${providerById(turn.providerId).title}_\n\n${body}`;
+	const marker = isLatest ? "💬 Q: " : "Q: ";
+	return `### ${marker}${turn.question}\n\n[ ${providerById(turn.providerId).title} ]\n\n${body}`;
 }
 
 /** Newest turn first so a streaming answer stays in view; earlier turns follow, newest to oldest. */
 export function conversationMarkdown(conv: Conversation, newestFirst: boolean): string {
 	const turns = newestFirst ? [...conv.turns].reverse() : conv.turns;
-	return turns.map(turnMarkdown).join("\n\n---\n\n");
+	const latestId = conv.turns.at(-1)?.id;
+	return turns.map((t) => turnMarkdown(t, t.id === latestId)).join("\n\n&nbsp;\n\n---\n\n---\n\n&nbsp;\n\n");
 }
 
 export const transcriptText = (conv: Conversation) =>
@@ -46,15 +50,43 @@ function richAction(action: RichAction, i: number) {
 export function ChatView() {
 	const { pop, push } = useNavigation();
 	const conv = useConversation();
+	const [settings, setSettings] = useState<Settings | null>(null);
+	useEffect(() => { loadSettings().then(setSettings); }, []);
+	const viewMode = settings?.viewMode ?? "stacked";
+
 	const latest = conv.turns.at(-1);
 	const streaming = latest?.status === "streaming";
 	const { markdown: answer, actions: rich, widgets } = renderAnswer(latest?.answer ?? "");
 	const code = lastCodeBlock(answer);
 
+	// Thinking animation: rotate dots while waiting for the first token.
+	const [dots, setDots] = useState(0);
+	const thinking = streaming && !answer;
+	useEffect(() => {
+		if (!thinking) return;
+		const t = setInterval(() => setDots((d) => (d + 1) % 4), 150);
+		return () => clearInterval(t);
+	}, [thinking]);
+	const thinkingText = "_Thinking" + ".".repeat(dots + 1) + "_";
+
+	// Paginated view state (newest first).
+	const reversed = [...conv.turns].reverse();
+	const [idx, setIdx] = useState(0);
+	useEffect(() => { setIdx(0); }, [conv.turns.length, latest?.id]);
+	const safeIdx = Math.min(idx, Math.max(0, reversed.length - 1));
+	const currentTurn = reversed[safeIdx];
+
+	const stackedMd = conversationMarkdown(conv, true).replace("_Thinking…_", thinking ? thinkingText : "_Thinking…_");
+	const paginatedBase = currentTurn ? turnMarkdown(currentTurn, currentTurn.id === latest?.id) : stackedMd;
+	const paginatedMd = viewMode === "paginated" && currentTurn?.id === latest?.id && thinking
+		? paginatedBase.replace("_Thinking…_", thinkingText)
+		: paginatedBase;
+	const markdown = viewMode === "paginated" ? paginatedMd : stackedMd;
+
 	return (
 		<Detail
-			navigationTitle={conv.title || "Ask AI"}
-			markdown={conversationMarkdown(conv, true)}
+			navigationTitle={viewMode === "paginated" && reversed.length > 1 ? `${conv.title || "Ask AI"}  (${safeIdx + 1}/${reversed.length})` : (conv.title || "Ask AI")}
+			markdown={markdown}
 			actions={
 				<ActionPanel>
 					<Action.CopyToClipboard
@@ -63,6 +95,26 @@ export function ChatView() {
 						shortcut={{ modifiers: ["ctrl"], key: "c" }}
 					/>
 					<Action title="Ask Follow-up" icon={Icon.SpeechBubble} shortcut={{ modifiers: ["ctrl"], key: "l" }} onAction={pop} />
+					{viewMode === "paginated" && reversed.length > 1 && (
+						<ActionPanel.Section title="Navigate">
+							{safeIdx < reversed.length - 1 && (
+								<Action
+									title="Previous question"
+									icon={Icon.ArrowLeft}
+									shortcut={{ modifiers: ["ctrl"], key: "[" }}
+									onAction={() => setIdx(safeIdx + 1)}
+								/>
+							)}
+							{safeIdx > 0 && (
+								<Action
+									title="Next question"
+									icon={Icon.ArrowRight}
+									shortcut={{ modifiers: ["ctrl"], key: "]" }}
+									onAction={() => setIdx(safeIdx - 1)}
+								/>
+							)}
+						</ActionPanel.Section>
+					)}
 					{!streaming && (widgets.length > 0 || rich.length > 0) && (
 						<ActionPanel.Section title="From the Answer">
 							{widgets.map((w, i) => (

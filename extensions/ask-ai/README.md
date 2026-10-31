@@ -19,6 +19,7 @@ Type a question into [Vicinae](https://vicinae.com). If nothing matches, press E
 | Claude Code | Your existing `claude` login |
 | Codex | Your existing `codex` login |
 | Antigravity | Your existing `agy` login |
+| OpenCode | No key needed. Uses the OpenCode CLI (`opencode`); free models (beam-free, deepseek-v4.1-flash-free, ...) or any model configured in OpenCode, including local Ollama (`ollama/<model>`). Runs in agent mode (build) with auto-approved permissions; destructive shell commands are denied per run. |
 | Claude API | Anthropic API key, or any Anthropic-compatible gateway (set **Base URL**; the key is sent as a bearer token). Requests use low effort. Sent straight to Anthropic, a question the model declines may be answered by Anthropic's recommended fallback model. |
 | OpenAI API | OpenAI API key, or any gateway serving the Responses API (set **Base URL**) |
 | Gemini API | Gemini API key |
@@ -38,6 +39,8 @@ The three login providers run the official command-line tool you already have in
 **Output Style** is Full, Layman's terms (short sentences, everyday words, terms explained), or Custom (your own instructions).
 
 **Rich Answers** is in the spirit of ChatGPT's Intelligent UI: the model may add an [OpenUI Lang](https://github.com/thesysdev/openui) block. It renders as headings, tables, bar charts, tips, code, images and map links, and its buttons and suggested follow-ups appear in the action menu. Ask for a calculator, converter or estimate and you get a live tool: Ctrl+O opens it as a form whose results update as you change the inputs. Turn Rich Answers off in settings for plain Markdown.
+
+**Answer View** is Stacked (scrollable, default) or Paginated (one question at a time, `Ctrl+[`/`Ctrl+]`). **Resume Window** sets how long a conversation stays resumable when reopening Ask AI by name.
 
 ## Install
 
@@ -83,10 +86,11 @@ In the answer view:
 | Ctrl+Shift+K | Copy the last code block |
 | Ctrl+. | Stop the answer |
 | Ctrl+R | Ask again |
+| Ctrl+[ / Ctrl+] | Previous / next question (paginated view) |
 | Ctrl+N | New conversation |
 | Ctrl+, | Settings |
 
-Every follow-up includes the earlier turns. Launching Ask AI from the fallback always starts a new conversation. Opening it by name continues the last conversation if it was active in the past 10 minutes. The 100 most recent conversations are kept.
+Every follow-up includes the earlier turns. Launching Ask AI from the fallback always starts a new conversation. Opening it by name continues the last conversation if it was active within the **Resume Window** (default 10 minutes, configurable in settings). The 100 most recent conversations are kept.
 
 ## Troubleshooting
 

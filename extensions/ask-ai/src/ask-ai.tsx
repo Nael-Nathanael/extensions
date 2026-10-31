@@ -8,7 +8,6 @@ import { SettingsForm } from "./settings-form.tsx";
 import { type Conversation, listConversations, loadConversation } from "./store.ts";
 
 /** Opening the command by name within this window continues the last conversation. */
-const RESUME_WINDOW_MS = 10 * 60_000;
 
 /**
  * The search bar is the composer: Enter sends and opens the full-width answer.
@@ -33,21 +32,23 @@ export function Composer(props: { fallbackText?: string; conversation?: Conversa
 	};
 
 	useEffect(() => {
-		loadSettings().then((s) => setProviderTitle(providerById(s.provider).title));
-		if (props.conversation) {
-			openConversation(props.conversation);
-			return;
-		}
-		if (props.fallbackText?.trim()) {
-			send(props.fallbackText, true);
-			return;
-		}
-		// The extension process can outlive the window, so the in-memory conversation may be old too.
-		listConversations().then(async ([latest]) => {
-			const recent = latest && Date.now() - latest.updatedAt <= RESUME_WINDOW_MS ? await loadConversation(latest.id) : undefined;
-			if (asked.current) return;
-			if (recent) openConversation(recent);
-			else if (Date.now() - getConversation().updatedAt > RESUME_WINDOW_MS) startNew();
+		loadSettings().then((s) => {
+			setProviderTitle(providerById(s.provider).title);
+			const windowMs = (s.resumeWindowMinutes ?? 10) * 60_000;
+			if (props.conversation) {
+				openConversation(props.conversation);
+				return;
+			}
+			if (props.fallbackText?.trim()) {
+				send(props.fallbackText, true);
+				return;
+			}
+			listConversations().then(async ([latest]) => {
+				const recent = latest && Date.now() - latest.updatedAt <= windowMs ? await loadConversation(latest.id) : undefined;
+				if (asked.current) return;
+				if (recent) openConversation(recent);
+				else if (Date.now() - getConversation().updatedAt > windowMs) startNew();
+			});
 		});
 	}, []);
 

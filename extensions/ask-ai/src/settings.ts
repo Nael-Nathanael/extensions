@@ -3,8 +3,9 @@ import { richPrompt } from "./openui.ts";
 import type { ProviderId } from "./providers/index.ts";
 
 export type OutputStyle = "full" | "layman" | "custom";
+export type ViewMode = "stacked" | "paginated";
 
-export type ProviderSettings = { apiKey?: string; baseUrl?: string; model?: string };
+export type ProviderSettings = { apiKey?: string; baseUrl?: string; model?: string; agent?: string; autoApprove?: boolean };
 
 export type Settings = {
 	provider: ProviderId;
@@ -14,11 +15,15 @@ export type Settings = {
 	/** Let the model add OpenUI blocks (tables, charts, places, buttons). */
 	richAnswers: boolean;
 	extraPath?: string;
+	/** How the answer view shows multiple turns. */
+	viewMode?: ViewMode;
+	/** Minutes to keep a conversation resumable when reopening Ask AI by name. */
+	resumeWindowMinutes?: number;
 };
 
 const KEY = "settings";
 
-export const DEFAULT_SETTINGS: Settings = { provider: "claude-code", providers: {}, outputStyle: "full", richAnswers: true };
+export const DEFAULT_SETTINGS: Settings = { provider: "claude-code", providers: {}, outputStyle: "full", richAnswers: true, viewMode: "stacked", resumeWindowMinutes: 10 };
 
 export async function loadSettings(): Promise<Settings> {
 	const raw = await LocalStorage.getItem<string>(KEY);
@@ -42,6 +47,6 @@ const STYLES: Record<Exclude<OutputStyle, "custom">, string> = {
 export function systemPrompt(settings: Settings): string {
 	const style =
 		settings.outputStyle === "custom" ? settings.customStyle?.trim() || STYLES.full : STYLES[settings.outputStyle];
-	const base = `You answer questions typed into a desktop launcher. Be direct; skip preamble.\n\n${style}`;
+	const base = `You answer questions typed into a desktop launcher. Be direct and concise; skip preamble; keep answers reasonably short unless the user asks for depth.\n\n${style}`;
 	return settings.richAnswers ? `${base}\n\n${richPrompt}` : base;
 }
